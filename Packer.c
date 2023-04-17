@@ -7,7 +7,6 @@
 
 #include "Packer.h"
 
-#include <stdbool.h>
 
 #ifndef _WIN32
 #include <arpa/inet.h>
@@ -113,6 +112,57 @@ int64_t packer_get_int64(const uint8_t *buffer, size_t *offset) {
     *offset += sizeof(int64_t);
     return ntohll(value);
 }
+
+void packer_add_double(PPACKER buf, double value) {
+    if (!buf) return;
+    if (!packer_resize_buffer(buf, buf->offset + sizeof(double))) return;
+    uint64_t value_uint64 = htonll(*((uint64_t*)&value));
+    memcpy(buf->buffer + buf->offset, &value_uint64, sizeof(double));
+    buf->offset += sizeof(double);
+}
+
+double packer_get_double(const uint8_t* buffer, size_t* offset) {
+    if (!buffer || !offset) return 0;
+    uint64_t value_uint64 = 0;
+    memcpy(&value_uint64, buffer + *offset, sizeof(double));
+    *offset += sizeof(double);
+    uint64_t value_uint64_net = ntohll(value_uint64);
+    double value = *((double*)&value_uint64_net);
+    return value;
+}
+
+void packer_add_bool(PPACKER buf, bool value) {
+    if (!buf) return;
+    if (!packer_resize_buffer(buf, buf->offset + sizeof(bool))) return;
+    memcpy(buf->buffer + buf->offset, &value, sizeof(bool));
+    buf->offset += sizeof(bool);
+}
+
+bool packer_get_bool(const uint8_t* buffer, size_t* offset) {
+    if (!buffer || !offset) return false;
+    bool value = false;
+    memcpy(&value, buffer + *offset, sizeof(bool));
+    *offset += sizeof(bool);
+    return value;
+}
+
+#ifdef FLOAT_SUPPORT
+void packer_add_float(PPACKER buf, float value) {
+    if (!buf) return;
+    if (!packer_resize_buffer(buf, buf->offset + sizeof(float))) return;
+    uint32_t netValue = htonl(*((uint32_t*)&value));
+    memcpy(buf->buffer + buf->offset, &netValue, sizeof(uint32_t));
+    buf->offset += sizeof(float);
+}
+
+float packer_get_float(const uint8_t* buffer, size_t* offset) {
+    if (!buffer || !offset) return 0.0f;
+    uint32_t netValue = 0;
+    memcpy(&netValue, buffer + *offset, sizeof(uint32_t));
+    *offset += sizeof(uint32_t);
+    return *((float*)&netValue);
+}
+#endif
 
 void packer_add_data(PPACKER buf, const void *data, size_t data_len) {
     if(!buf || !data ) return;
