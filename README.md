@@ -8,8 +8,8 @@ example:
 
 ```c
 PPACKER protocol = packer_init();
-packer_add_data(osinfo, sizeof(osinfo));
-send(fd, protocol->buffer, protocol->offset,0);
+packer_add_data(protocol, information, sizeof(information));
+send(fd, protocol->buffer, protocol->offset, 0);
 packer_free(protocol);
 ```
 
