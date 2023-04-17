@@ -6,6 +6,7 @@
  * */
 
 #include "Packer.h"
+#include <stdint.h>
 
 
 #ifndef _WIN32
@@ -85,14 +86,13 @@ void packer_add_int32(PPACKER buf, int32_t value) {
     if(!buf) return;
     if(!packer_resize_buffer(buf, buf->offset + sizeof(int32_t))) return;
     value = htonl(value);
-    memcpy(buf->buffer + buf->offset, &value, sizeof(int32_t));
+    *(int32_t *)(buf->buffer + buf->offset) = value;
     buf->offset += sizeof(int32_t);
 }
 
 int32_t packer_get_int32(const uint8_t *buffer, size_t *offset) {
     if(!buffer || !offset) return 0;
-    int32_t value = 0;
-    memcpy(&value, buffer + *offset, sizeof(int32_t));
+    int32_t value = *(int32_t *)(buffer + *offset);
     *offset += sizeof(int32_t);
     return ntohl(value);
 }
@@ -101,14 +101,13 @@ void packer_add_int64(PPACKER buf, int64_t value) {
     if(!buf) return;
     if(!packer_resize_buffer(buf, buf->offset + sizeof(int64_t))) return;
     value = htonll(value);
-    memcpy(buf->buffer + buf->offset, &value, sizeof(int64_t));
+    *(int64_t *)(buf->buffer + buf->offset) = value;
     buf->offset += sizeof(int64_t);
 }
 
 int64_t packer_get_int64(const uint8_t *buffer, size_t *offset) {
     if(!buffer || !offset) return 0;
-    int64_t value = 0;
-    memcpy(&value, buffer + *offset, sizeof(int64_t));
+    int64_t value = *(int64_t *)(buffer + *offset);
     *offset += sizeof(int64_t);
     return ntohll(value);
 }
@@ -117,14 +116,13 @@ void packer_add_double(PPACKER buf, double value) {
     if (!buf) return;
     if (!packer_resize_buffer(buf, buf->offset + sizeof(double))) return;
     uint64_t value_uint64 = htonll(*((uint64_t*)&value));
-    memcpy(buf->buffer + buf->offset, &value_uint64, sizeof(double));
+    *(uint64_t *)(buf->buffer + buf->offset) = value_uint64;
     buf->offset += sizeof(double);
 }
 
 double packer_get_double(const uint8_t* buffer, size_t* offset) {
     if (!buffer || !offset) return 0;
-    uint64_t value_uint64 = 0;
-    memcpy(&value_uint64, buffer + *offset, sizeof(double));
+    uint64_t value_uint64 = *(uint64_t*)(buffer + *offset);
     *offset += sizeof(double);
     uint64_t value_uint64_net = ntohll(value_uint64);
     double value = *((double*)&value_uint64_net);
@@ -134,14 +132,13 @@ double packer_get_double(const uint8_t* buffer, size_t* offset) {
 void packer_add_bool(PPACKER buf, bool value) {
     if (!buf) return;
     if (!packer_resize_buffer(buf, buf->offset + sizeof(bool))) return;
-    memcpy(buf->buffer + buf->offset, &value, sizeof(bool));
+    *(bool*)(buf->buffer + buf->offset) = value;
     buf->offset += sizeof(bool);
 }
 
 bool packer_get_bool(const uint8_t* buffer, size_t* offset) {
     if (!buffer || !offset) return false;
-    bool value = false;
-    memcpy(&value, buffer + *offset, sizeof(bool));
+    bool value = *(bool*)(buffer + *offset);
     *offset += sizeof(bool);
     return value;
 }
@@ -151,14 +148,13 @@ void packer_add_float(PPACKER buf, float value) {
     if (!buf) return;
     if (!packer_resize_buffer(buf, buf->offset + sizeof(float))) return;
     uint32_t netValue = htonl(*((uint32_t*)&value));
-    memcpy(buf->buffer + buf->offset, &netValue, sizeof(uint32_t));
+    *(uint32_t *)(buf->buffer + buf->offset) = netValue;
     buf->offset += sizeof(float);
 }
 
 float packer_get_float(const uint8_t* buffer, size_t* offset) {
     if (!buffer || !offset) return 0.0f;
-    uint32_t netValue = 0;
-    memcpy(&netValue, buffer + *offset, sizeof(uint32_t));
+    uint32_t netValue = *(uint32_t *)(buffer + *offset);
     *offset += sizeof(uint32_t);
     return *((float*)&netValue);
 }
