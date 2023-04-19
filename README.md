@@ -13,6 +13,18 @@ send(fd, protocol->buffer, protocol->offset, 0);
 packer_free(protocol);
 ```
 
+and, you can get values stored in a buffer
+
+example:
+
+```c
+recv(fd, buffer, size, 0);
+size_t offset = 0;
+char *value1 = packer_get_string(buffer, &offset);
+int value2 = packer_get_int32(buffer, &offset);
+void *value3 = packer_get_data(buffer, value2, &offset);
+```
+
 You can find more examples in example folder.
 
 * cross-platform
