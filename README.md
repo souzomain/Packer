@@ -1,8 +1,8 @@
 # Overview
 
-Packer is a compact, fast and crosss-platform serialization library for store data in a buffer.
+Simple, fast and Light-weigh, Packer is a crosss-platform serialization C library.
 
-The packer lib, works on several projects. You can build your protocol in an easy way using the packer!
+The packer library, works on several projects. You can build your protocol in an easy way using the packer!
 
 example:
 
