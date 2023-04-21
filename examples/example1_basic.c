@@ -5,7 +5,7 @@ int main(int argc, char **argv){
     PPACKER packer = packer_init();
     if(!packer){ printf("Error in packer initialization"); return 1; }
     packer_add_string(packer, "hello world");
-    packer_add_string(packer, "teste");
+    packer_add_string(packer, "test");
 
     size_t offset = 0;
     printf("%s\n", packer_get_string(packer->buffer, &offset));
