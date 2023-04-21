@@ -9,7 +9,7 @@ example:
 ```c
 PPACKER protocol = packer_init();
 packer_add_data(protocol, information, sizeof(information));
-send(fd, protocol->buffer, protocol->offset, 0);
+send(fd, packer_get_buffer(protocol), packer_get_size(protocol), 0);
 packer_free(protocol);
 ```
 
@@ -43,3 +43,4 @@ in windows you have to add the flag -lws2_32
 # Thanks
 
 Thanks to the demon of havoc framework, this repository is wonderful!
+
