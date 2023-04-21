@@ -38,7 +38,23 @@ gcc yourfile.c Packer.c
 
 Simple!
 
+# Python support
+
+This serialization library now have a python support
+
+
+```python
+from Packer import Packer, Parser
+
+packer = Packer()
+packer.add_str("hello world")
+
+print(f"packet size: {packer.get_size()} | packet: {packer.get_buffer()}")
+
+parser = Parser(packer.get_buffer(), packer.get_size())
+print(parser.parse_str())
+```
+
 # Thanks
 
-Thanks to the demon of havoc framework, this repository is wonderful!
-
+Thanks to the Havoc Framework and its contributors, this repository is wonderful!
