@@ -38,8 +38,6 @@ gcc yourfile.c Packer.c
 
 Simple!
 
-in windows you have to add the flag -lws2_32
-
 # Thanks
 
 Thanks to the demon of havoc framework, this repository is wonderful!
