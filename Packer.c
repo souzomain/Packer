@@ -10,10 +10,6 @@
 
 #include <stdlib.h>
 
-enum {
-    INITIAL_BUFFER_SIZE = 1024,
-    BUFFER_SIZE_INCREMENT = 1024
-};
 
 /*Custom functions to increase speed */
 
@@ -61,45 +57,55 @@ void *packer_memcpy(void *dest, const void *src, size_t n){
     return dest;
 }
 
+// permit you change to add custom allocations memory
+
+void *packer_malloc(unsigned long size){
+    return malloc(size);
+}
+
 void *packer_calloc(size_t nmemb, size_t size) {
     size_t total_size = nmemb * size;
-    void *ptr = malloc(total_size);
+    void *ptr = packer_malloc(total_size);
     if (ptr != NULL) 
         PackerZero(ptr, total_size);
     
     return ptr;
 }
 
+void *packer_realloc(void * ptr, unsigned long size){
+    if(size <= 0) {free(ptr); return NULL;}
+    return realloc(ptr, size);
+}
 /*End custom*/
 
 PPACKER packer_init() {
-    PPACKER buf = (PPACKER)malloc(sizeof(PACKER));
+    PPACKER buf = (PPACKER)packer_calloc(sizeof(PACKER), 1);
     if(buf == NULL) return NULL;
 
-    buf->buffer = packer_calloc(INITIAL_BUFFER_SIZE, 1);
-    if(!buf->buffer) { free(buf); return NULL; }
-    buf->size = INITIAL_BUFFER_SIZE;
+    buf->buffer = NULL;
+    buf->size = 0;
     buf->offset = 0;
     return buf;
 }
 
 void packer_free(PPACKER buf) {
     if(!buf) return;
+    PackerZero(buf->buffer, buf->size);
     free(buf->buffer);
     buf->buffer = NULL;
     buf->size = 0;
     buf->offset = 0;
+    PackerZero(buf, sizeof(PACKER));
     free(buf);
 }
 
 bool packer_resize_buffer(PPACKER buf, size_t new_size) {
     if (new_size > buf->size) {
-        size_t size = new_size + BUFFER_SIZE_INCREMENT - (new_size  % BUFFER_SIZE_INCREMENT);
-        void *ptr = realloc(buf->buffer, size);
+        void *ptr = packer_realloc(buf->buffer, new_size);
         if(!ptr)
             return false;
         
-        buf->size = size;
+        buf->size = new_size;
         buf->buffer = ptr;
     }
     return true;
