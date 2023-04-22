@@ -40,8 +40,7 @@ Simple!
 
 # Python support
 
-This serialization library now have a python support
-
+This serialization library have python support and other languages
 
 ```python
 from Packer import Packer, Parser
@@ -54,6 +53,8 @@ print(f"packet size: {packer.get_size()} | packet: {packer.get_buffer()}")
 parser = Parser(packer.get_buffer(), packer.get_size())
 print(parser.parse_str())
 ```
+
+more examples from other languages in example folder 
 
 # Thanks
 
