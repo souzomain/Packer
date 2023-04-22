@@ -5,8 +5,8 @@ from struct import pack,calcsize, unpack
 class Packer:
 
     def __init__(self):
-        self.buffer = b''   # Buffer de bytes
-        self.length = 0     # Comprimento do buffer
+        self.buffer = b''
+        self.length = 0
 
     def get_buffer(self) -> bytes:
         return self.buffer
