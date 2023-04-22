@@ -1,4 +1,4 @@
-package parser
+package packer
 
 import (
 	"encoding/binary"

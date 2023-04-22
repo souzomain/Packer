@@ -2,8 +2,8 @@ package main
 
 import (
     "fmt"
-    "github.com/souzomain/Packer/go/packer"
-    "github.com/souzomain/Packer/go/parser"
+    "./packer"
+    "./parser"
 )
 
 func main() {
