@@ -33,7 +33,7 @@ You can find more examples in example folder.
 
 you can compile using gcc or any other C/C++ compiler.
 
-nix example:
+example:
 gcc yourfile.c Packer.c
 
 Simple!
@@ -54,7 +54,7 @@ parser = Parser(packer.get_buffer(), packer.get_size())
 print(parser.parse_str())
 ```
 
-more examples from other languages in example folder 
+more examples from other languages in language you choice folder 
 
 # Thanks
 
