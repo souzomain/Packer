@@ -201,8 +201,8 @@ float packer_get_float(const uint8_t* buffer, size_t* offset) {
 
 void packer_add_data(PPACKER buf, const void *data, size_t data_len) {
     if(!buf || !data ) return;
-    if(!packer_resize_buffer(buf, buf->offset + sizeof(int32_t) + data_len)) return;
     packer_add_int32(buf, (int32_t)data_len);
+    if(!packer_resize_buffer(buf, buf->offset + data_len)) return;
     packer_memcpy(buf->buffer + buf->offset, data, data_len);
     buf->offset += data_len;
 }
@@ -221,8 +221,8 @@ void* packer_get_data(const uint8_t *buffer, size_t* data_len, size_t *offset) {
 void packer_add_string(PPACKER buf, const char * str){
     if(!buf || !str) return;
     size_t str_len = packer_strlen(str);
-    if(!packer_resize_buffer(buf, buf->offset + sizeof(int32_t) + str_len))  return;
     packer_add_int32(buf, (int32_t)str_len);
+    if(!packer_resize_buffer(buf, buf->offset + str_len))  return;
     packer_memcpy(buf->buffer + buf->offset, str, str_len);
     buf->offset += str_len;
 }
@@ -231,7 +231,6 @@ char* packer_get_string(const uint8_t* buffer, size_t *offset) {
     if (!buffer || !offset) return NULL;
 
     int32_t len = packer_get_int32(buffer, offset);
-
     char *str = (char *)(buffer + *offset);
     *offset += len;
 
