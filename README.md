@@ -48,9 +48,9 @@ from Packer import Packer, Parser
 packer = Packer()
 packer.add_str("hello world")
 
-print(f"packet size: {packer.get_size()} | packet: {packer.get_buffer()}")
+print(f"packet size: {len(packer)} | packet: {packer.buffer}")
 
-parser = Parser(packer.get_buffer(), packer.get_size())
+parser = Parser(packer.buffer)
 print(parser.parse_str())
 ```
 
