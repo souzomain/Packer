@@ -1,67 +1,52 @@
-#Code ported from https://github.com/HavocFramework/havoc-py
-
-from struct import pack,calcsize, unpack
+import struct
 
 class Packer:
-
     def __init__(self):
-        self.buffer = b''
-        self.length = 0
+        self.buffer = bytearray()
 
-    def get_buffer(self) -> bytes:
-        return self.buffer
+    def add_str(self, value):
+        value_bytes = value.encode('utf-8')
+        length = len(value_bytes)
+        self.add_int32(length)
+        self.buffer.extend(value_bytes)
 
-    def get_size(self) -> int:
-        return self.length
+    def add_data(self, value):
+        length = len(value)
+        self.add_int32(length)
+        self.buffer.extend(value)
 
-    def get_buffer_with_length(self) -> bytes:
-        return pack("<L", self.length ) + self.buffer
+    def add_int32(self, value):
+        self.buffer.extend(struct.pack('!i', value))
 
-    def _encode_utf8(self, data: str) -> bytes:
-        if isinstance(data, str):
-            return data.encode("utf-8")
-        return data
+    def add_int64(self, value):
+        self.buffer.extend(struct.pack('!q', value))
 
-    def add_int(self, data : int ) -> None:
-        self.buffer += pack("<i", data)
-        self.length += 4
-        return
-
-    def add_str(self, data: str) -> None:
-        encoded_data = self._encode_utf8(data)
-        fmt = f"<L{len(encoded_data)}s"
-        self.buffer += pack(fmt, len(encoded_data) + 1, encoded_data + b'\x00')
-        self.length += calcsize(fmt)
-
-    def add_data(self, data: bytes) -> None:
-        fmt = f"<L{len(data)}s"
-        self.buffer += pack(fmt, len(data), data)
-        self.length += calcsize(fmt)
-        
-    def dump(self) -> None:
-        print( f"[*] Buffer: [{ self.length }] [{ self.get_buffer() }]" )
-        return
-
+    def get_buffer(self):
+        return bytes(self.buffer)
 
 class Parser:
-    buffer: bytes = b''
-    length: int = 0
-
-    def __init__(self, buffer, length):
+    def __init__(self, buffer):
         self.buffer = buffer
-        self.length = length
-        return
+        self.offset = 0
 
-    def parse_int(self) -> int:
-        val = unpack( ">i", self.buffer[ :4 ])
-        self.buffer = self.buffer[4:]
-        return val[ 0 ]
+    def get_str(self):
+        length = self.get_int32()
+        value = self.buffer[self.offset:self.offset + length]
+        self.offset += length
+        return value.decode('utf-8')
 
-    def parse_bytes( self ) -> bytes:
-        length      = self.parse_int()
-        buf         = self.buffer[:length]
-        self.buffer = self.buffer[length:]
-        return buf
+    def get_data(self):
+        length = self.get_int32()
+        value = self.buffer[self.offset:self.offset + length]
+        self.offset += length
+        return value
 
-    def parse_str( self ) -> str:
-        return self.parse_bytes().decode('utf-8')
+    def get_int32(self):
+        value = struct.unpack('!i', self.buffer[self.offset:self.offset + 4])[0]
+        self.offset += 4
+        return value
+
+    def get_int64(self):
+        value = struct.unpack('!q', self.buffer[self.offset:self.offset + 8])[0]
+        self.offset += 8
+        return value
