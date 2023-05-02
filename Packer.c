@@ -34,6 +34,7 @@ uint64_t packer_htonll(uint64_t value) {
     uint32_t low = value & 0xFFFFFFFF;
     return ((uint64_t)packer_htonl(high) << 32) | packer_htonl(low);
 }
+
 size_t  packer_strlen(const char *str){
     size_t len = 0;
     while(*str++)
@@ -76,6 +77,7 @@ void *packer_realloc(void * ptr, unsigned long size){
     if(size <= 0) {free(ptr); return NULL;}
     return realloc(ptr, size);
 }
+
 /*End custom*/
 
 PPACKER packer_init() {

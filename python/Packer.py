@@ -4,18 +4,18 @@ class Packer:
     def __init__(self):
         self.buffer = bytearray()
 
-    def add_str(self, value):
+    def add_str(self, value : str):
         value_bytes = value.encode('utf-8')
         length = len(value_bytes)
         self.add_int32(length)
         self.buffer.extend(value_bytes)
 
-    def add_data(self, value):
+    def add_data(self, value : bytes):
         length = len(value)
         self.add_int32(length)
         self.buffer.extend(value)
 
-    def add_int32(self, value):
+    def add_int32(self, value : int):
         self.buffer.extend(struct.pack('!i', value))
 
     def add_int64(self, value):
