@@ -35,18 +35,18 @@ uint64_t packer_htonll(uint64_t value) {
     return ((uint64_t)packer_htonl(high) << 32) | packer_htonl(low);
 }
 
-size_t  packer_strlen(const char *str){
+size_t packer_strlen(const char *str){
     size_t len = 0;
     while(*str++)
         ++len;
     return len;
 }
 
-void *packer_memset(void *ptr, int value, size_t num) {
-    unsigned char *byte_ptr = (unsigned char *)ptr;
-    for (size_t i = 0; i < num; i++) {
-        byte_ptr[i] = (unsigned char)value;
-    }
+void *packer_memset(void *ptr, uint64_t value, uint64_t num) {
+    uint8_t *byte_ptr = (uint8_t *)ptr;
+    for (size_t i = 0; i < num; i++) 
+        byte_ptr[i] = (uint8_t)value;
+    
     return ptr;
 }
 
@@ -60,7 +60,7 @@ void *packer_memcpy(void *dest, const void *src, size_t n){
 
 // permit you change to add custom allocations memory
 
-void *packer_malloc(unsigned long size){
+void *packer_malloc(size_t size){
     return malloc(size);
 }
 
@@ -73,7 +73,7 @@ void *packer_calloc(size_t nmemb, size_t size) {
     return ptr;
 }
 
-void *packer_realloc(void * ptr, unsigned long size){
+void *packer_realloc(void *ptr, size_t size){
     if(size <= 0) {free(ptr); return NULL;}
     return realloc(ptr, size);
 }
@@ -113,7 +113,7 @@ bool packer_resize_buffer(PPACKER buf, size_t new_size) {
     return true;
 }
 
-size_t packer_get_size(PPACKER buf){
+uint64_t packer_get_size(PPACKER buf){
     if(!buf) return 0;
     return buf->offset;
 }
@@ -131,10 +131,25 @@ void packer_add_int32(PPACKER buf, int32_t value) {
     buf->offset += sizeof(int32_t);
 }
 
-int32_t packer_get_int32(const uint8_t *buffer, size_t *offset) {
+int32_t packer_get_int32(const uint8_t *buffer, uint64_t *offset) {
     if(!buffer || !offset) return 0;
     int32_t value = *(int32_t *)(buffer + *offset);
     *offset += sizeof(int32_t);
+    return packer_ntohl(value);
+}
+
+void packer_add_uint32(PPACKER buf, uint32_t value){
+    if(!buf) return;
+    if(!packer_resize_buffer(buf, buf->offset + sizeof(uint32_t))) return;
+    value = packer_htonl(value);
+    *(uint32_t *)(buf->buffer + buf->offset) = value;
+    buf->offset += sizeof(uint32_t);
+}
+
+uint32_t packer_get_uint32(const uint8_t *buffer, uint64_t *offset){
+    if(!buffer || !offset) return 0;
+    uint32_t value = *(uint32_t *)(buffer + *offset);
+    *offset += sizeof(uint32_t);
     return packer_ntohl(value);
 }
 
@@ -146,10 +161,25 @@ void packer_add_int64(PPACKER buf, int64_t value) {
     buf->offset += sizeof(int64_t);
 }
 
-int64_t packer_get_int64(const uint8_t *buffer, size_t *offset) {
+int64_t packer_get_int64(const uint8_t *buffer, uint64_t *offset) {
     if(!buffer || !offset) return 0;
     int64_t value = *(int64_t *)(buffer + *offset);
     *offset += sizeof(int64_t);
+    return packer_ntohll(value);
+}
+
+void packer_add_uint64(PPACKER buf, uint64_t value) {
+    if(!buf) return;
+    if(!packer_resize_buffer(buf, buf->offset + sizeof(uint64_t))) return;
+    value = packer_htonll(value);
+    *(uint64_t *)(buf->buffer + buf->offset) = value;
+    buf->offset += sizeof(uint64_t);
+}
+
+uint64_t packer_get_uint64(const uint8_t *buffer, uint64_t *offset) {
+    if(!buffer || !offset) return 0;
+    uint64_t value = *(uint64_t *)(buffer + *offset);
+    *offset += sizeof(uint64_t);
     return packer_ntohll(value);
 }
 
@@ -201,18 +231,18 @@ float packer_get_float(const uint8_t* buffer, size_t* offset) {
 }
 #endif
 
-void packer_add_data(PPACKER buf, const void *data, size_t data_len) {
+void packer_add_data(PPACKER buf, const void *data, uint32_t data_len) {
     if(!buf || !data ) return;
-    packer_add_int32(buf, (int32_t)data_len);
+    packer_add_uint32(buf, (int64_t)data_len);
     if(!packer_resize_buffer(buf, buf->offset + data_len)) return;
     packer_memcpy(buf->buffer + buf->offset, data, data_len);
     buf->offset += data_len;
 }
 
-void* packer_get_data(const uint8_t *buffer, size_t* data_len, size_t *offset) {
+void* packer_get_data(const uint8_t *buffer, uint32_t* data_len, uint64_t *offset) {
     if(!buffer || !data_len || !offset) return NULL;
 
-    int32_t len = packer_get_int32(buffer, offset);
+    uint32_t len = packer_get_uint32(buffer, offset);
 
     void *data = (void *)(buffer + *offset);
     *data_len = len;
@@ -220,21 +250,53 @@ void* packer_get_data(const uint8_t *buffer, size_t* data_len, size_t *offset) {
     return data;
 }
 
-void packer_add_string(PPACKER buf, const char * str){
+void packer_add_data64(PPACKER buf, const void *data, uint64_t data_len){
+    if(!buf || !data ) return;
+    packer_add_uint64(buf, (int64_t)data_len);
+    if(!packer_resize_buffer(buf, buf->offset + data_len)) return;
+    packer_memcpy(buf->buffer + buf->offset, data, data_len);
+    buf->offset += data_len;
+}
+
+void* packer_get_data64(const uint8_t *buffer, uint64_t* data_len, uint64_t *offset){
+    if(!buffer || !data_len || !offset) return NULL;
+    uint64_t len = packer_get_uint64(buffer, offset);
+    void *data = (void *)(buffer + *offset);
+    *data_len = len;
+    *offset += len;
+    return data;
+}
+
+void packer_add_string(PPACKER buf, const char *str){
     if(!buf || !str) return;
     size_t str_len = packer_strlen(str);
-    packer_add_int32(buf, (int32_t)str_len);
+    packer_add_uint32(buf, (uint32_t)str_len);
     if(!packer_resize_buffer(buf, buf->offset + str_len))  return;
     packer_memcpy(buf->buffer + buf->offset, str, str_len);
     buf->offset += str_len;
 }
 
-char* packer_get_string(const uint8_t* buffer, size_t *offset) {
+char* packer_get_string(const uint8_t* buffer, uint64_t *offset) {
     if (!buffer || !offset) return NULL;
-
-    int32_t len = packer_get_int32(buffer, offset);
+    uint32_t len = packer_get_uint32(buffer, offset);
     char *str = (char *)(buffer + *offset);
     *offset += len;
+    return str;
+}
 
+void packer_add_string64(PPACKER buf, const char * str){
+    if(!buf || !str) return;
+    size_t str_len = packer_strlen(str);
+    packer_add_uint64(buf, (uint64_t)str_len);
+    if(!packer_resize_buffer(buf, buf->offset + str_len))  return;
+    packer_memcpy(buf->buffer + buf->offset, str, str_len);
+    buf->offset += str_len;
+}
+
+char* packer_get_string64(const uint8_t* buffer, uint64_t *offset){
+    if (!buffer || !offset) return NULL;
+    uint64_t len = packer_get_uint64(buffer, offset);
+    char *str = (char *)(buffer + *offset);
+    *offset += len;
     return str;
 }
