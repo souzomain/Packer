@@ -26,7 +26,7 @@ typedef struct {
 PPACKER     packer_init();
 void        packer_free(PPACKER buf);
 
-size_t      packer_get_size(PPACKER buf);
+uint64_t    packer_get_size(PPACKER buf);
 uint8_t*    packer_get_buffer(PPACKER buf);
 
 void        packer_add_int32(PPACKER buf, int32_t value);

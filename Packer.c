@@ -207,7 +207,7 @@ void packer_add_bool(PPACKER buf, bool value) {
     buf->offset += sizeof(bool);
 }
 
-bool packer_get_bool(const uint8_t* buffer, size_t* offset) {
+bool packer_get_bool(const uint8_t* buffer, uint64_t* offset) {
     if (!buffer || !offset) return false;
     bool value = *(bool*)(buffer + *offset);
     *offset += sizeof(bool);
@@ -223,7 +223,7 @@ void packer_add_float(PPACKER buf, float value) {
     buf->offset += sizeof(float);
 }
 
-float packer_get_float(const uint8_t* buffer, size_t* offset) {
+float packer_get_float(const uint8_t* buffer, uint64_t* offset) {
     if (!buffer || !offset) return 0.0f;
     uint32_t netValue = *(uint32_t *)(buffer + *offset);
     *offset += sizeof(uint32_t);
