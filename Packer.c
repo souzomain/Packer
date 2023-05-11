@@ -60,8 +60,43 @@ void *packer_memcpy(void *dest, const void *src, size_t n){
 
 // permit you change to add custom allocations memory
 
+void*  (*c_realloc)  (void *, size_t)   = NULL;
+void*  (*c_malloc)   (size_t)           = NULL;
+void   (*c_free)     (void *)           = NULL;
+
+void packer_set_alloc_func(void *fn_malloc, void *fn_realloc, void *fn_free){
+    if(fn_malloc != NULL)
+        c_malloc = (void *(*)(size_t))fn_malloc;
+    if(fn_realloc != NULL)
+        c_realloc = (void * (*)(void *, size_t))fn_realloc;
+    if(fn_free != NULL)
+        c_free = (void (*)(void *))fn_free;
+}
+
+void packer_alloc_verify(){
+    if(c_realloc == NULL)
+        c_realloc = &realloc;
+    if(c_malloc == NULL)
+        c_malloc = &malloc;
+    if(c_free == NULL)
+        c_free = &free;
+}
+
+void packer_free(PPACKER buf) {
+    packer_alloc_verify();
+    if(!buf) return;
+    PackerZero(buf->buffer, buf->size);
+    c_free(buf->buffer);
+    buf->buffer = NULL;
+    buf->size = 0;
+    buf->offset = 0;
+    PackerZero(buf, sizeof(PACKER));
+    c_free(buf);
+}
+
 void *packer_malloc(size_t size){
-    return malloc(size);
+    packer_alloc_verify();
+    return c_malloc(size);
 }
 
 void *packer_calloc(size_t nmemb, size_t size) {
@@ -74,8 +109,9 @@ void *packer_calloc(size_t nmemb, size_t size) {
 }
 
 void *packer_realloc(void *ptr, size_t size){
-    if(size <= 0) {free(ptr); return NULL;}
-    return realloc(ptr, size);
+    packer_alloc_verify();
+    if(size <= 0) {packer_free(ptr); return NULL;}
+    return c_realloc(ptr, size);
 }
 
 /*End custom*/
@@ -90,16 +126,6 @@ PPACKER packer_init() {
     return buf;
 }
 
-void packer_free(PPACKER buf) {
-    if(!buf) return;
-    PackerZero(buf->buffer, buf->size);
-    free(buf->buffer);
-    buf->buffer = NULL;
-    buf->size = 0;
-    buf->offset = 0;
-    PackerZero(buf, sizeof(PACKER));
-    free(buf);
-}
 
 bool packer_resize_buffer(PPACKER buf, size_t new_size) {
     if (new_size > buf->size) {

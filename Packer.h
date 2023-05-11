@@ -22,6 +22,7 @@ typedef struct {
     size_t offset;
 } PACKER, *PPACKER;
 
+void        packer_set_alloc_func(void *fn_malloc, void *fn_realloc, void *fn_free);
 
 PPACKER     packer_init();
 void        packer_free(PPACKER buf);
