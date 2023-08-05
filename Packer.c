@@ -22,7 +22,7 @@ uint32_t packer_ntohl(uint32_t value) {
 uint64_t packer_ntohll(uint64_t value) {
     uint32_t high = packer_ntohl(value & 0xFFFFFFFF);
     uint32_t low = packer_ntohl(value >> 32);
-    return ((uint64_t)high << 32) | low;
+    return ((uint64_t)packer_ntohl(high) << 32) | packer_ntohl(low);
 }
 
 uint32_t packer_htonl(uint32_t value) {
